@@ -18,17 +18,17 @@ The primary purpose of this library is to enable **remote management** of Q-SYS 
 |--------|-------------|
 | `rebootCore(coreId)` | Remotely reboot a Q-SYS Core |
 | `renameSystem(systemId, name)` | Rename a system |
-| `updateNetworkService(coreId, serviceId, enabled)` | Enable/disable network services (SSH, discovery, etc.) |
+| `updateNetworkService(coreId, serviceId, enabled)` | Enable/disable network services (QRC, discovery, etc.) |
 
 ```javascript
 // Reboot a core
-await client.rebootCore(31652);
+await client.rebootCore(1234);
 
 // Rename a system
-await client.renameSystem(24626, 'Conference Room A');
+await client.renameSystem(5678, 'Conference Room A');
 
-// Enable SSH for remote maintenance
-await client.updateNetworkService(31652, 'ssh', { lanA: true, lanB: false });
+// Enable WebSocket control on LAN A
+await client.updateNetworkService(1234, 'qrcPublic', { lanA: true, lanB: false });
 ```
 
 ## Installation
@@ -98,8 +98,8 @@ const client = createClient(token);
 
 // Make many calls with the same client
 await client.getSites();
-await client.getCores(4052);
-await client.getSystem(24626);
+await client.getCores(1001);
+await client.getSystem(5678);
 // ... all use the same token
 ```
 
@@ -173,7 +173,7 @@ const sites = await client.getSites();
 Get all cores for a site.
 
 ```javascript
-const cores = await client.getCores(4052);
+const cores = await client.getCores(1001);
 // [{ id, name, systems: [...], ... }, ...]
 ```
 
@@ -182,7 +182,7 @@ const cores = await client.getCores(4052);
 Get detailed information about a specific core.
 
 ```javascript
-const core = await client.getCore(4052, 31652);
+const core = await client.getCore(1001, 1234);
 ```
 
 #### `getCoreFeatures(coreId)`
@@ -190,7 +190,7 @@ const core = await client.getCore(4052, 31652);
 Get feature configuration for a core.
 
 ```javascript
-const features = await client.getCoreFeatures(31652);
+const features = await client.getCoreFeatures(1234);
 ```
 
 #### `getCoreTime(coreId)`
@@ -198,7 +198,7 @@ const features = await client.getCoreFeatures(31652);
 Get time configuration for a core.
 
 ```javascript
-const timeConfig = await client.getCoreTime(31652);
+const timeConfig = await client.getCoreTime(1234);
 ```
 
 #### `rebootCore(coreId)`
@@ -206,7 +206,7 @@ const timeConfig = await client.getCoreTime(31652);
 Reboot a core. Returns `true` on success.
 
 ```javascript
-const success = await client.rebootCore(31652);
+const success = await client.rebootCore(1234);
 // true
 ```
 
@@ -221,10 +221,10 @@ const success = await client.rebootCore(31652);
 Get network configuration (hostname, interfaces, DNS).
 
 ```javascript
-const network = await client.getNetworkInfo(31652);
+const network = await client.getNetworkInfo(1234);
 // {
 //   data: {
-//     hostname: 'sea-3829-qdsp-01',
+//     hostname: 'lobby-core-01',
 //     interfaces: [
 //       { id: 'LAN A', ipAddress: '172.29.125.15', hasLink: true, ... },
 //       { id: 'LAN B', ipAddress: '', hasLink: false, ... }
@@ -240,7 +240,7 @@ const network = await client.getNetworkInfo(31652);
 Get network services configuration (discovery, SSH, QRC, etc.).
 
 ```javascript
-const services = await client.getNetworkServices(31652);
+const services = await client.getNetworkServices(1234);
 // {
 //   data: [
 //     { id: 'discovery', enabled: { lanA: true, lanB: false } },
@@ -256,14 +256,14 @@ const services = await client.getNetworkServices(31652);
 Update a single network service. Automatically fetches current state, modifies the target service, and saves.
 
 ```javascript
-// Enable SSH on LAN A only
-await client.updateNetworkService(31652, 'ssh', { lanA: true, lanB: false });
+// Enable WebSocket control on LAN A only
+await client.updateNetworkService(1234, 'qrcPublic', { lanA: true, lanB: false });
 
 // Enable mDNS (boolean-type service)
-await client.updateNetworkService(31652, 'mdns', true);
+await client.updateNetworkService(1234, 'mdns', true);
 
 // Disable discovery on both LANs
-await client.updateNetworkService(31652, 'discovery', { lanA: false, lanB: false });
+await client.updateNetworkService(1234, 'discovery', { lanA: false, lanB: false });
 ```
 
 **Available service IDs:**
@@ -291,12 +291,12 @@ await client.updateNetworkService(31652, 'discovery', { lanA: false, lanB: false
 Get detailed information about a system.
 
 ```javascript
-const system = await client.getSystem(24626);
+const system = await client.getSystem(5678);
 // {
-//   id: 24626,
-//   name: 'SEA-3829 Classroom',
+//   id: 5678,
+//   name: 'Main Lobby',
 //   status: { code: 0, name: 'OK', message: 'Running' },
-//   core: { id: 31652, name: 'sea-3829-qdsp-01', model: 'Core 8 Flex', ... },
+//   core: { id: 1234, name: 'lobby-core-01', model: 'Core 8 Flex', ... },
 //   revision: { version: 54, ... },
 //   ...
 // }
@@ -318,7 +318,7 @@ const systems = await client.getAllSystems();
 Get inventory items for a system.
 
 ```javascript
-const items = await client.getSystemItems(24626);
+const items = await client.getSystemItems(5678);
 ```
 
 #### `renameSystem(systemId, name)`
@@ -326,7 +326,7 @@ const items = await client.getSystemItems(24626);
 Rename a system. Returns `true` on success.
 
 ```javascript
-const success = await client.renameSystem(24626, 'SEA-3829 Conference Room');
+const success = await client.renameSystem(5678, 'Main Conference Room');
 // true
 ```
 
@@ -402,7 +402,7 @@ fs.writeFileSync('systems.json', JSON.stringify(systems, null, 2));
 console.log(`Exported ${systems.length} systems`);
 ```
 
-### Bulk enable SSH on all cores
+### Bulk enable WebSocket control on all cores
 
 ```javascript
 const sites = await client.getSites();
@@ -411,8 +411,8 @@ for (const site of sites) {
   const cores = await client.getCores(site.id);
   
   for (const core of cores) {
-    await client.updateNetworkService(core.id, 'ssh', { lanA: true, lanB: false });
-    console.log(`Enabled SSH on ${core.name}`);
+    await client.updateNetworkService(core.id, 'qrcPublic', { lanA: true, lanB: false });
+    console.log(`Enabled WebSocket control on ${core.name}`);
   }
 }
 ```
