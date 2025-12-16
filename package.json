@@ -1,0 +1,42 @@
+{
+  "name": "qsys-reflect-http",
+  "version": "1.0.0",
+  "description": "Q-SYS Reflect API client with automated authentication",
+  "main": "dist/src/index.js",
+  "types": "dist/src/index.d.ts",
+  "type": "module",
+  "exports": {
+    ".": {
+      "import": "./dist/src/index.js",
+      "types": "./dist/src/index.d.ts"
+    }
+  },
+  "files": [
+    "dist/src"
+  ],
+  "scripts": {
+    "build": "tsc",
+    "prepublishOnly": "npm run build",
+    "test": "npm run build && node --test 'dist/tests/**/*.test.js'",
+    "sandbox": "npm run build && node ./.ignore/sandbox.js"
+  },
+  "keywords": [
+    "qsys",
+    "qsc",
+    "reflect",
+    "api",
+    "audio",
+    "av"
+  ],
+  "author": "Patrick Gilligan",
+  "license": "MIT",
+  "devDependencies": {
+    "@types/node": "^22.0.0",
+    "typescript": "^5.9.3"
+  },
+  "dependencies": {
+    "axios": "^1.13.2",
+    "dotenv": "^17.2.3",
+    "puppeteer": "^24.33.0"
+  }
+}
